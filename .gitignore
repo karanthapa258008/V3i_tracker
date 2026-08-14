@@ -32,3 +32,7 @@ google-services.json
 
 # Android Profiling
 *.hprof
+V3i_tracker/
+__pycache__/
+*.pyc
+db.sqlite3
