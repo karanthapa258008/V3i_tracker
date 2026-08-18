@@ -18,7 +18,7 @@ from django.conf import settings
 from django.db.models.functions import TruncDate
 
 
-GOOGLE_CLIENT_ID = "193079824337-bpahd9tnqipbm9n9lm33599ck5vf82em.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "215426541202-dfle5hgascifn83u4e7fcp74kaj2cnr0.apps.googleusercontent.com"
 
 
 # ---------------- GOOGLE LOGIN ---------------- #
@@ -85,7 +85,6 @@ def google_login(request):
             "status": False,
             "message": str(e)
         }, status=400)
-
 
 # ---------------- UPDATE LOCATION ---------------- #
 
