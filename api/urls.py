@@ -33,16 +33,17 @@ urlpatterns = [
     ),
 
     path(
-    "history-dates/<int:employee_id>/",
-    employee_history_dates),
+        "history-dates/<int:employee_id>/",
+        employee_history_dates
+    ),
 
     path(
-    "history-by-date/<int:employee_id>/<str:date>/",
-    history_by_date),
+        "history-by-date/<int:employee_id>/<str:date>/",
+        history_by_date
+    ),
 
     path(
-    "upload-visit-proof/",
-    upload_visit_proof
-),
-
+        "upload-visit-proof/",
+        upload_visit_proof
+    ),
 ]

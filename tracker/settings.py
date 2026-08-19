@@ -27,6 +27,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "192.168.29.35",
     "192.168.1.13",
+    "192.168.1.8",
 
     # PythonAnywhere
     "Virendra117.pythonanywhere.com",

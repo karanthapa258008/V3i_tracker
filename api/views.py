@@ -135,6 +135,8 @@ def update_location(request):
 
 # ---------------- SIMPLE LOGIN (TEMP) ---------------- #
 
+# ---------------- SIMPLE LOGIN ---------------- #
+
 @api_view(["POST"])
 def login(request):
 
@@ -145,28 +147,53 @@ def login(request):
         return Response({
             "status": False,
             "message": "Email Required"
-        })
+        }, status=400)
 
-    employee, created = Employee.objects.get_or_create(
-        email=email,
-        defaults={
-            "google_id": email,
-            "name": name
-        }
-    )
+    try:
 
-    if not created:
+        employee = Employee.objects.get(
+            email=email
+        )
+
+    except Employee.DoesNotExist:
+
+        return Response({
+            "status": False,
+            "message": "You are not authorized to use this application."
+        }, status=404)
+
+
+    if not employee.is_active:
+
+        return Response({
+            "status": False,
+            "message": "Account is disabled."
+        }, status=403)
+
+
+    # Name update
+    if name:
+
         employee.name = name
+
         employee.save()
 
+
     return Response({
+
         "status": True,
+
         "employee_id": employee.id,
+
         "name": employee.name,
-        "email": employee.email
+
+        "email": employee.email,
+
+        "photo": employee.profile_photo,
+
+        "role": employee.role
+
     })
-
-
 # ---------------- ALL EMPLOYEE LIVE LOCATIONS ---------------- #
 
 @api_view(["GET"])
