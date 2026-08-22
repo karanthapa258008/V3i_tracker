@@ -136,3 +136,28 @@ class VisitProof(models.Model):
 
     def __str__(self):
         return f"{self.employee.name} - Visit Proof"
+
+
+class TrackingSession(models.Model):
+
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="tracking_sessions"
+    )
+
+    start_time = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    end_time = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    def __str__(self):
+        return f"{self.employee.name} - {self.start_time}"

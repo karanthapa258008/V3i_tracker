@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from datetime import datetime
+from django.utils import timezone
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -10,7 +11,8 @@ from .models import (
     Employee,
     LocationLog,
     CurrentLocation,
-    VisitProof
+    VisitProof,
+    TrackingSession
 )
 from django.core.files.storage import default_storage
 from django.conf import settings
@@ -88,6 +90,8 @@ def google_login(request):
 
 # ---------------- UPDATE LOCATION ---------------- #
 
+# ---------------- UPDATE LOCATION ---------------- #
+
 @api_view(["POST"])
 def update_location(request):
 
@@ -98,19 +102,33 @@ def update_location(request):
     longitude = request.data.get("longitude")
     accuracy = request.data.get("accuracy", 0)
 
+    if not employee_id:
+        return Response({
+            "status": False,
+            "message": "Employee ID required"
+        }, status=400)
+
     try:
 
-        employee = Employee.objects.get(id=employee_id)
+        employee = Employee.objects.get(
+            id=employee_id
+        )
 
-        # Save History
-        LocationLog.objects.create(
+        # =====================================================
+        # SAVE LOCATION HISTORY
+        # =====================================================
+
+        location = LocationLog.objects.create(
             employee=employee,
             latitude=latitude,
             longitude=longitude,
             accuracy=accuracy
         )
 
-        # Update Current Location
+        # =====================================================
+        # UPDATE CURRENT LOCATION
+        # =====================================================
+
         CurrentLocation.objects.update_or_create(
             employee=employee,
             defaults={
@@ -120,9 +138,54 @@ def update_location(request):
             }
         )
 
+        # =====================================================
+        # TRACKING SESSION
+        # =====================================================
+
+        active_session = TrackingSession.objects.filter(
+            employee=employee,
+            is_active=True
+        ).first()
+
+        # =====================================================
+        # FIRST LOCATION
+        # =====================================================
+
+        if active_session is None:
+
+            active_session = TrackingSession.objects.create(
+                employee=employee,
+                start_time=location.created_at,
+                end_time=location.created_at,
+                is_active=True
+            )
+
+        # =====================================================
+        # LAST LOCATION
+        # =====================================================
+
+        else:
+
+            active_session.end_time = location.created_at
+
+            active_session.save(
+                update_fields=["end_time"]
+            )
+
         return Response({
+
             "status": True,
-            "message": "Location Updated"
+
+            "message": "Location Updated",
+
+            "start_time": timezone.localtime(
+                active_session.start_time
+            ).strftime("%Y-%m-%d %I:%M:%S %p"),
+
+            "end_time": timezone.localtime(
+                active_session.end_time
+            ).strftime("%Y-%m-%d %I:%M:%S %p")
+
         })
 
     except Employee.DoesNotExist:
@@ -418,9 +481,9 @@ def history_by_date(request, employee_id, date):
 
             "accuracy": item.accuracy,
 
-            "time": item.created_at.strftime("%I:%M %p"),
+            "time": timezone.localtime(item.created_at).strftime("%I:%M %p"),
 
-            "created_at": item.created_at,
+            "created_at": timezone.localtime(item.created_at),
 
             "has_photo": proof is not None,
 
