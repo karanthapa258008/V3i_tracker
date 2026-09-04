@@ -18,7 +18,11 @@ class Employee(models.Model):
 
     email = models.EmailField(unique=True)
 
-    profile_photo = models.URLField(blank=True, null=True)
+    profile_photo = models.ImageField(
+        upload_to="employee_profiles/",
+        blank=True,
+        null=True
+    )
 
     role = models.CharField(
         max_length=20,
@@ -161,3 +165,49 @@ class TrackingSession(models.Model):
 
     def __str__(self):
         return f"{self.employee.name} - {self.start_time}"
+class LocationEvent(models.Model):
+
+    EVENT_CHOICES = [
+        ("gps_off", "GPS Off"),
+        ("gps_on", "GPS On"),
+        ("internet_off", "Internet Off"),
+        ("internet_on", "Internet On"),
+    ]
+
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="location_events"
+    )
+
+    event_type = models.CharField(
+        max_length=30,
+        choices=EVENT_CHOICES
+    )
+
+    event_time = models.DateTimeField()
+
+    latitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        null=True,
+        blank=True
+    )
+
+    longitude = models.DecimalField(
+        max_digits=10,
+        decimal_places=7,
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return (
+            f"{self.employee.name} - "
+            f"{self.event_type} - "
+            f"{self.event_time}"
+        )
