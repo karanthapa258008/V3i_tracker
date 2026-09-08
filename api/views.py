@@ -1392,3 +1392,17 @@ def heartbeat(request):
         },
         status=200
     )
+# =========================================================
+# APP VERSION CHECK
+# =========================================================
+
+@api_view(["GET"])
+def app_version(request):
+
+    return Response({
+        "status": True,
+        "version_code": 3,
+        "version_name": "1.2",
+        "update_url": "YOUR_APK_DOWNLOAD_URL",
+        "force_update": True
+    })

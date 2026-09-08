@@ -15,6 +15,7 @@ from .views import (
     location_event,
     location_event_history,
     heartbeat,
+    app_version,
 )
 
 
@@ -115,4 +116,10 @@ urlpatterns = [
         name="location-event-history"
     ),
     path("heartbeat/", heartbeat, name="heartbeat"),
+    
+    path(
+    "app-version/",
+    app_version,
+    name="app-version"
+),
 ]
