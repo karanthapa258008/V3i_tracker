@@ -1403,6 +1403,6 @@ def app_version(request):
         "status": True,
         "version_code": 3,
         "version_name": "1.2",
-        "update_url": "YOUR_APK_DOWNLOAD_URL",
+        "update_url": "https://github.com/karanthapa258008/V3i_tracker/releases/download/v1.2/app-release.apk",
         "force_update": True
     })
