@@ -14,6 +14,7 @@ from .views import (
     add_employee,
     location_event,
     location_event_history,
+    heartbeat,
 )
 
 
@@ -113,4 +114,5 @@ urlpatterns = [
         location_event_history,
         name="location-event-history"
     ),
+    path("heartbeat/", heartbeat, name="heartbeat"),
 ]

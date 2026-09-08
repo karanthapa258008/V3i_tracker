@@ -472,7 +472,6 @@ def employee_locations(request):
     data = []
 
     # ONLY EMPLOYEES
-    # Admin role yahan show nahi hoga.
     employees = Employee.objects.filter(
         role="employee",
         is_active=True
@@ -494,22 +493,21 @@ def employee_locations(request):
         if employee.profile_photo:
 
             profile_photo_url = request.build_absolute_uri(
-
                 employee.profile_photo.url
-
             )
 
         # -------------------------------------------------
-        # DEFAULT LOCATION VALUES
+        # DEFAULT VALUES
         # -------------------------------------------------
 
         latitude = None
         longitude = None
         accuracy = None
         updated_at = None
+        online = False
 
         # -------------------------------------------------
-        # AGAR LOCATION AVAILABLE HAI
+        # CURRENT LOCATION AVAILABLE
         # -------------------------------------------------
 
         if current_location:
@@ -529,6 +527,16 @@ def employee_locations(request):
             updated_at = timezone.localtime(
                 current_location.updated_at
             ).isoformat()
+
+            # -------------------------------------------------
+            # ONLINE / OFFLINE
+            # -------------------------------------------------
+
+            last_seen = current_location.updated_at
+
+            online = (
+                timezone.now() - last_seen
+            ).total_seconds() <= 5 * 60
 
         # -------------------------------------------------
         # EMPLOYEE DATA
@@ -552,6 +560,8 @@ def employee_locations(request):
 
             "updated_at": updated_at,
 
+            "online": online,
+
             "role": employee.role,
 
             "is_active": employee.is_active
@@ -565,8 +575,6 @@ def employee_locations(request):
         "employees": data
 
     })
-
-
 # =========================================================
 # EMPLOYEE LOCATION HISTORY
 # =========================================================
@@ -1324,3 +1332,63 @@ def location_event_history(request, employee_id):
         "events": data
 
     })
+
+
+@api_view(["POST"])
+def heartbeat(request):
+    employee_id = request.data.get("employee_id")
+
+    if not employee_id:
+        return Response(
+            {
+                "status": False,
+                "message": "Employee ID required"
+            },
+            status=400
+        )
+
+    try:
+        employee = Employee.objects.get(
+            id=employee_id,
+            role="employee",
+            is_active=True
+        )
+    except Employee.DoesNotExist:
+        return Response(
+            {
+                "status": False,
+                "message": "Employee not found"
+            },
+            status=404
+        )
+
+    current_location = CurrentLocation.objects.filter(
+        employee=employee
+    ).first()
+
+    if not current_location:
+        return Response(
+            {
+                "status": False,
+                "message": "Current location not found"
+            },
+            status=404
+        )
+
+    current_location.updated_at = timezone.now()
+
+    current_location.save(
+        update_fields=["updated_at"]
+    )
+
+    return Response(
+        {
+            "status": True,
+            "message": "Heartbeat received",
+            "employee_id": employee.id,
+            "updated_at": timezone.localtime(
+                current_location.updated_at
+            ).isoformat()
+        },
+        status=200
+    )
